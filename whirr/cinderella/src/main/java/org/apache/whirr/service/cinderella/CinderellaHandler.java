@@ -16,13 +16,13 @@
  * limitations under the License.
  */
 
-package org.apache.whirr.service.vblob;
+package org.apache.whirr.service.cinderella;
 
 import static org.apache.whirr.RolePredicates.role;
-import static org.apache.whirr.service.vblob.VBlobStatements.cleanup;
-import static org.apache.whirr.service.vblob.VBlobStatements.install;
-import static org.apache.whirr.service.vblob.VBlobStatements.start;
-import static org.apache.whirr.service.vblob.VBlobStatements.stop;
+import static org.apache.whirr.service.cinderella.CinderellaStatements.cleanup;
+import static org.apache.whirr.service.cinderella.CinderellaStatements.install;
+import static org.apache.whirr.service.cinderella.CinderellaStatements.start;
+import static org.apache.whirr.service.cinderella.CinderellaStatements.stop;
 
 import java.io.IOException;
 
@@ -31,11 +31,11 @@ import org.apache.whirr.service.ClusterActionEvent;
 import org.apache.whirr.service.ClusterActionHandlerSupport;
 import org.apache.whirr.service.FirewallManager.Rule;
 
-public class VBlobHandler extends ClusterActionHandlerSupport {
+public class CinderellaHandler extends ClusterActionHandlerSupport {
 
    @Override
    public String getRole() {
-      return "vblob";
+      return "cinderella";
    }
 
    @Override
@@ -43,17 +43,17 @@ public class VBlobHandler extends ClusterActionHandlerSupport {
       event.getStatementBuilder().addStatement(install(toConfig(event)));
    }
 
-   protected VBlobConfig toConfig(ClusterActionEvent event) throws IOException {
-      return new CommonsConfigurationToVBlobConfig(getRole(), event.getClusterSpec().getClusterUser())
+   protected CinderellaConfig toConfig(ClusterActionEvent event) throws IOException {
+      return new CommonsConfigurationToCinderellaConfig(getRole(), event.getClusterSpec().getClusterUser())
             .apply(getConfiguration(event.getClusterSpec(), "whirr-" + getRole() + "-default.properties"));
    }
 
    @Override
    protected void beforeConfigure(ClusterActionEvent event) throws IOException {
-      VBlobConfig config = toConfig(event);
+      CinderellaConfig config = toConfig(event);
       Cluster cluster = event.getCluster();
       event.getFirewallManager().addRule(
-            Rule.create().destination(cluster.getInstancesMatching(role(getRole()))).port(config.getS3Port()));
+            Rule.create().destination(cluster.getInstancesMatching(role(getRole()))).port(config.getEC2Port()));
    }
 
    @Override

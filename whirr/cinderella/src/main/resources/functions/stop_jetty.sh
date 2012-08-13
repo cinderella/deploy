@@ -15,8 +15,11 @@
 # limitations under the License.
 #
 function stop_jetty() {
-  local jetty_home=$1
+  export JETTY_HOME=$1
+  export JETTY_PORT=$2
+  export JETTY_USER=$3
   
-  cd $jetty_home
-  kill `cat jetty.pid`
+  cd $JETTY_HOME
+  ./bin/jetty.sh stop
+  return $?
 }

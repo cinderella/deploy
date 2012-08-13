@@ -7,7 +7,7 @@
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *    http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,80 +15,86 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.apache.whirr.service.cinderella.integration;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
-import java.io.IOException;
+import static org.jclouds.concurrent.MoreExecutors.sameThreadExecutor;
 
 import org.apache.commons.configuration.CompositeConfiguration;
-import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.whirr.Cluster;
 import org.apache.whirr.Cluster.Instance;
 import org.apache.whirr.ClusterController;
 import org.apache.whirr.ClusterSpec;
-import org.apache.whirr.service.cinderella.CinderellaClusterActionHandler;
-import org.apache.whirr.util.BlobCache;
-import org.jclouds.predicates.InetSocketAddressConnect;
-import org.junit.AfterClass;
-import org.junit.Assert;
+import org.apache.whirr.TestConstants;
+import org.apache.whirr.service.cinderella.CinderellaConfig;
+import org.apache.whirr.service.cinderella.CommonsConfigurationToCinderellaConfig;
+import org.jclouds.ContextBuilder;
+import org.jclouds.concurrent.config.ExecutorServiceModule;
+import org.jclouds.ec2.EC2ApiMetadata;
+import org.jclouds.ec2.EC2AsyncClient;
+import org.jclouds.ec2.EC2Client;
+import org.jclouds.rest.RestContext;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableSet;
-import com.google.common.net.HostAndPort;
-import com.google.common.primitives.Ints;
+import com.google.inject.Module;
 
 /**
- * TODO:
+ * Install a cinderella service on the remote machine, and test its EC2 interface.
  */
 public class CinderellaServiceTest {
+   private ClusterSpec clusterSpec;
+   private ClusterController controller;
+   private Cluster cluster;
+   private CinderellaConfig cinderellaConfig;
 
-   private static ClusterSpec clusterSpec;
-   private static ClusterController controller;
-   private static Cluster cluster;
-
-   private static int port;
-   
    @Before
    public void setUp() throws Exception {
       CompositeConfiguration config = new CompositeConfiguration();
-      if (System.getProperty("conf") != null) {
-         config.addConfiguration(new PropertiesConfiguration(System.getProperty("conf")));
+      if (System.getProperty("config") != null) {
+         config.addConfiguration(new PropertiesConfiguration(System.getProperty("config")));
       }
       config.addConfiguration(new PropertiesConfiguration("whirr-cinderella-test.properties"));
       config.addConfiguration(new PropertiesConfiguration("whirr-cinderella-default.properties"));
-
-      port = Ints
-            .tryParse(getPropertyOrThrowReasonableNPE(CinderellaClusterActionHandler.CINDERELLA_PORT, config));
-
+      
       clusterSpec = ClusterSpec.withTemporaryKeys(config);
+
+      cinderellaConfig = new CommonsConfigurationToCinderellaConfig("cinderella", clusterSpec.getClusterUser()).apply(config);
       controller = new ClusterController();
 
+      controller.destroyCluster(clusterSpec);
+      
       cluster = controller.launchCluster(clusterSpec);
    }
-
-   @SuppressWarnings("unchecked")
-   protected static String getPropertyOrThrowReasonableNPE(String propertyKey, Configuration config) {
-      return checkNotNull(config.getString(propertyKey), "%s not in %s", propertyKey,
-            ImmutableSet.copyOf(config.getKeys()));
-   }
-
-   @Test
-   public void testCinderella() {
+   
+   
+   @Test(timeout = TestConstants.ITEST_TIMEOUT)
+   public void testEC2Interface() throws Exception {
       for (Instance instance : cluster.getInstances()) {
-         Assert.assertTrue(new InetSocketAddressConnect().apply(HostAndPort.fromParts(instance.getPublicIp(), port)));
+
+         RestContext<? extends EC2Client, ? extends EC2AsyncClient> context = ContextBuilder.newBuilder(new EC2ApiMetadata())
+                                             .endpoint("http://" + instance.getPublicAddress().getHostAddress() + ":" + cinderellaConfig.getEC2Port())
+                                             .credentials(cinderellaConfig.getAuthorizedAccessKey(), cinderellaConfig.getAuthorizedSecretKey())
+                                             .modules(ImmutableSet.<Module>of(new ExecutorServiceModule(sameThreadExecutor(), sameThreadExecutor())))
+                                             .build(EC2ApiMetadata.CONTEXT_TOKEN);
+         
+         try {
+            context.getApi().getAMIServices().describeImagesInRegion(null);
+         } finally {
+            context.close();
+         }
+      
       }
+
    }
 
-   @AfterClass
-   public static void after() throws IOException, InterruptedException {
+   @After
+   public void tearDown() throws Exception {
       if (controller != null) {
          controller.destroyCluster(clusterSpec);
       }
-
-      BlobCache.dropAndCloseAll();
    }
+
 }

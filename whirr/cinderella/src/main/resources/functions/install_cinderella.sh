@@ -14,12 +14,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-function cleanup_vblob() {
-  local VBLOB_HOME=${1}
-  local VBLOB_USER=${2}
-  
-  if [ -n "$VBLOB_HOME" -a -d "$VBLOB_HOME" ]; then
-    echo removing $VBLOB_HOME
-    rm -rf $VBLOB_HOME
-  fi
+function install_cinderella() {
+  local CINDERELLA_REPO=$1
+  export M2_HOME=$2
+  export PATH=$M2_HOME/bin:$PATH
+  local DEST=$3
+   
+  cd $CINDERELLA_REPO &&
+  mvn clean install &&
+  cp webapp/target/cinderella.war $DEST
+  return $?
 }

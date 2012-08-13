@@ -15,12 +15,11 @@
 # limitations under the License.
 #
 function start_jetty() {
-  local jetty_home=$1
-  local jetty_port=$2
+  export JETTY_HOME=$1
+  export JETTY_PORT=$2
+  export JETTY_USER=$3
   
-  cd $jetty_home
-  local cmd="java -jar start.jar -Djetty.port=$jetty_port"
-  nohup $cmd > $jetty_home/server.log 2>&1 &
-  echo $! > jetty.pid
-
+  cd $JETTY_HOME
+  ./bin/jetty.sh start
+  return $?
 }

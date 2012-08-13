@@ -17,7 +17,6 @@
  */
 package org.apache.whirr.service.vblob.integration;
 
-import static com.google.common.base.Preconditions.checkNotNull;
 import static org.jclouds.concurrent.MoreExecutors.sameThreadExecutor;
 import static org.jclouds.s3.reference.S3Constants.PROPERTY_S3_VIRTUAL_HOST_BUCKETS;
 import static org.jclouds.util.Strings2.toStringAndClose;
@@ -25,20 +24,19 @@ import static org.jclouds.util.Strings2.toStringAndClose;
 import java.util.Properties;
 
 import org.apache.commons.configuration.CompositeConfiguration;
-import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.whirr.Cluster;
 import org.apache.whirr.Cluster.Instance;
 import org.apache.whirr.ClusterController;
 import org.apache.whirr.ClusterSpec;
 import org.apache.whirr.TestConstants;
-import org.apache.whirr.service.vblob.VBlobHandler;
+import org.apache.whirr.service.vblob.CommonsConfigurationToVBlobConfig;
+import org.apache.whirr.service.vblob.VBlobConfig;
 import org.jclouds.ContextBuilder;
 import org.jclouds.blobstore.BlobStore;
 import org.jclouds.blobstore.BlobStoreContext;
 import org.jclouds.blobstore.domain.Blob;
 import org.jclouds.concurrent.config.ExecutorServiceModule;
-import org.jclouds.domain.Credentials;
 import org.jclouds.s3.S3ApiMetadata;
 import org.junit.After;
 import org.junit.Assert;
@@ -46,7 +44,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableSet;
-import com.google.common.primitives.Ints;
 import com.google.inject.Module;
 
 /**
@@ -56,8 +53,7 @@ public class VBlobServiceTest {
    private ClusterSpec clusterSpec;
    private ClusterController controller;
    private Cluster cluster;
-   private Credentials s3Credentials;
-   private int s3Port;
+   private VBlobConfig vBlobConfig;
 
    @Before
    public void setUp() throws Exception {
@@ -68,15 +64,14 @@ public class VBlobServiceTest {
       config.addConfiguration(new PropertiesConfiguration("whirr-vblob-test.properties"));
       config.addConfiguration(new PropertiesConfiguration("whirr-vblob-default.properties"));
       
-      s3Credentials = new Credentials(getPropertyOrThrowReasonableNPE(VBlobHandler.KEY_ID, config),
-                                      getPropertyOrThrowReasonableNPE(VBlobHandler.SECRET_ID, config));
-
-      s3Port = Ints.tryParse(getPropertyOrThrowReasonableNPE(VBlobHandler.PORT, config));
-
       clusterSpec = ClusterSpec.withTemporaryKeys(config);
+
+      vBlobConfig = new CommonsConfigurationToVBlobConfig("vblob", clusterSpec.getClusterUser()).apply(config);
       controller = new ClusterController();
+      
       cluster = controller.launchCluster(clusterSpec);
    }
+   
    
    @Test(timeout = TestConstants.ITEST_TIMEOUT)
    public void testS3Interface() throws Exception {
@@ -86,8 +81,8 @@ public class VBlobServiceTest {
          overrides.setProperty(PROPERTY_S3_VIRTUAL_HOST_BUCKETS, "false");
          
          BlobStore blobstore = ContextBuilder.newBuilder(new S3ApiMetadata())
-                                             .endpoint("http://" + instance.getPublicAddress().getHostAddress() + ":" + s3Port)
-                                             .credentials(s3Credentials.identity, s3Credentials.credential)
+                                             .endpoint("http://" + instance.getPublicAddress().getHostAddress() + ":" + vBlobConfig.getS3Port())
+                                             .credentials(vBlobConfig.getAuthorizedAccessKey(), vBlobConfig.getAuthorizedSecretKey())
                                              .overrides(overrides)
                                              .modules(ImmutableSet.<Module>of(new ExecutorServiceModule(sameThreadExecutor(), sameThreadExecutor())))
                                              .buildView(BlobStoreContext.class).getBlobStore();
@@ -109,12 +104,6 @@ public class VBlobServiceTest {
       if (controller != null) {
          controller.destroyCluster(clusterSpec);
       }
-   }
-
-   @SuppressWarnings("unchecked")
-   protected String getPropertyOrThrowReasonableNPE(String propertyKey, Configuration config ) {
-      return checkNotNull(config.getString(propertyKey), "%s not in %s", propertyKey,
-               ImmutableSet.copyOf(config.getKeys()));
    }
 
 }
