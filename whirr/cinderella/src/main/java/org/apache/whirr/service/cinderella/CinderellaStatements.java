@@ -41,10 +41,8 @@ public class CinderellaStatements {
             .add(InstallJDK.fromOpenJDK())
             .add(extractTargzAndFlattenIntoDirectory(config.getJettyTar(), config.getHome()))
             .addAll(buildCinderellaWarFromSource(config, config.getHome() + "/webapps/root.war"))
-            .add(exec("chown -R " + config.getUser() + " " + config.getHome()))
-            .add(exec("mkdir ${HOME}/.cinderella"))
             .add(writeEC2ServiceProperties(config))
-            .add(exec("chown -R " + config.getUser() + " ${HOME}/.cinderella")).build());
+            .add(exec("chown -R " + config.getUser() + " " + config.getHome())).build());
    }
    
    private static Iterable<Statement> buildCinderellaWarFromSource(CinderellaConfig config, String dest) {
@@ -61,10 +59,11 @@ public class CinderellaStatements {
             .put("endpoint", config.getVCloudEndpoint().toASCIIString())
             .put("useratorg", config.getVCloudUserAtOrg())
             .put("password", config.getVCloudPassword())
-            .put("key", config.getAuthorizedAccessKey() + "=" + config.getAuthorizedSecretKey())
+            .put("WSDLVersion", config.getEC2Version())
+            .put("key." + config.getAuthorizedAccessKey(), config.getAuthorizedSecretKey())
             .build();
             
-      return createOrOverwriteFile("${HOME}/.cinderella/ec2-service.properties",
+      return createOrOverwriteFile(config.getHome() + "/ec2-service.properties",
                   ImmutableSet.of(Joiner.on('\n').withKeyValueSeparator("=").join(configFile)));
    }
 

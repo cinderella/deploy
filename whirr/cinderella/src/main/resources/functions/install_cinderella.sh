@@ -19,7 +19,9 @@ function install_cinderella() {
   export M2_HOME=$2
   export PATH=$M2_HOME/bin:$PATH
   local DEST=$3
-   
+  
+  export MAVEN_OPTS="-Xms256m -Xmx512m -XX:PermSize=64m -XX:MaxPermSize=128m -verbose:gc"
+  
   cd $CINDERELLA_REPO &&
   mvn clean install &&
   cp webapp/target/cinderella.war $DEST

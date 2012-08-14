@@ -75,7 +75,7 @@ public class CinderellaServiceTest {
       for (Instance instance : cluster.getInstances()) {
 
          RestContext<? extends EC2Client, ? extends EC2AsyncClient> context = ContextBuilder.newBuilder(new EC2ApiMetadata())
-                                             .endpoint("http://" + instance.getPublicAddress().getHostAddress() + ":" + cinderellaConfig.getEC2Port())
+                                             .endpoint("http://" + instance.getPublicAddress().getHostAddress() + ":" + cinderellaConfig.getEC2Port() + "/")
                                              .credentials(cinderellaConfig.getAuthorizedAccessKey(), cinderellaConfig.getAuthorizedSecretKey())
                                              .modules(ImmutableSet.<Module>of(new ExecutorServiceModule(sameThreadExecutor(), sameThreadExecutor())))
                                              .build(EC2ApiMetadata.CONTEXT_TOKEN);

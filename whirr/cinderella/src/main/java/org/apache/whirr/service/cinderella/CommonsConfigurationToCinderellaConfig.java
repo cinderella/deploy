@@ -48,7 +48,8 @@ public class CommonsConfigurationToCinderellaConfig implements Function<Configur
       Builder builder = CinderellaConfig.builder();
       builder.user(user);
       builder.home(getPropertyOrThrowReasonableNPE(prefix + ".home", input));
-      builder.ec2Port(Integer.parseInt(getPropertyOrThrowReasonableNPE(prefix + ".ec2port", input)));
+      builder.ec2Port(Integer.parseInt(getPropertyOrThrowReasonableNPE(prefix + ".ec2.port", input)));
+      builder.ec2Version(getPropertyOrThrowReasonableNPE(prefix + ".ec2.version", input));
       builder.authorizedAccessKey(getPropertyOrThrowReasonableNPE(prefix + ".auth.access-key", input));
       builder.authorizedSecretKey(getPropertyOrThrowReasonableNPE(prefix + ".auth.secret-key", input));
       builder.vCloudEndpoint(URI.create(getPropertyOrThrowReasonableNPE(prefix + ".vcloud.endpoint", input)));
