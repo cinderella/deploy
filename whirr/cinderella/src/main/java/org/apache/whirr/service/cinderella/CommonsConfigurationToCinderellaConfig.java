@@ -62,3 +62,4 @@ public class CommonsConfigurationToCinderellaConfig implements Function<Configur
       return builder.build();
    }
 }
+
