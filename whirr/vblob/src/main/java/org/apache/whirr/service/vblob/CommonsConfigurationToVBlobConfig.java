@@ -60,3 +60,4 @@ public class CommonsConfigurationToVBlobConfig implements Function<Configuration
       return builder.build();
    }
 }
+
