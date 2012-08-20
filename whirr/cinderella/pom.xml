@@ -20,7 +20,7 @@
   <parent>
     <groupId>org.apache.whirr</groupId>
     <artifactId>whirr</artifactId>
-    <version>0.8.0-SNAPSHOT</version>
+    <version>0.8.0</version>
     <relativePath>../../pom.xml</relativePath>
   </parent>
   <groupId>org.apache.whirr</groupId>
@@ -30,38 +30,27 @@
   <name>Apache Whirr Cinderella</name>
   <url>http://wiki.apache.org/cinderella</url>
   <properties>
+    <whirr.version>0.8.0</whirr.version>
     <osgi.import>
       !org.apache.whirr.service.cinderella*,
       org.apache.commons.configuration*;version="[1.6,2)",
       *
     </osgi.import>
     <osgi.export>
-      org.apache.whirr.service.cinderella*;version="${project.version}"
+      org.apache.whirr.service.cinderella*;version="${whirr.version}"
     </osgi.export>
-    <osgi.fragment.host>jclouds-scriptbuilder;bundle-version="${jclouds.version}"</osgi.fragment.host>
+    <osgi.bundle.activator>org.apache.whirr.service.cinderella.osgi.Activator</osgi.bundle.activator>
   </properties>
   <dependencies>
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>whirr-core</artifactId>
-      <version>${project.version}</version>
+      <version>${whirr.version}</version>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>whirr-core</artifactId>
-      <version>${project.version}</version>
-      <type>test-jar</type>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>whirr-vblob</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>whirr-vblob</artifactId>
-      <version>${project.version}</version>
+      <version>${whirr.version}</version>
       <type>test-jar</type>
       <scope>test</scope>
     </dependency>
@@ -80,7 +69,12 @@
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-log4j12</artifactId>
-     </dependency>
+    </dependency>
+    <dependency>
+      <groupId>org.osgi</groupId>
+      <artifactId>org.osgi.core</artifactId>
+      <scope>provided</scope>
+    </dependency>
   </dependencies>
   <build>
     <plugins>
