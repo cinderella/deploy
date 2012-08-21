@@ -22,6 +22,7 @@ import static org.jclouds.scriptbuilder.domain.Statements.call;
 import static org.jclouds.scriptbuilder.domain.Statements.createOrOverwriteFile;
 import static org.jclouds.scriptbuilder.domain.Statements.exec;
 import static org.jclouds.scriptbuilder.domain.Statements.extractTargzAndFlattenIntoDirectory;
+import static org.jclouds.scriptbuilder.domain.Statements.saveHttpResponseTo;
 
 import java.util.Map;
 
@@ -40,18 +41,9 @@ public class CinderellaStatements {
             .<Statement> builder()
             .add(InstallJDK.fromOpenJDK())
             .add(extractTargzAndFlattenIntoDirectory(config.getJettyTar(), config.getHome()))
-            .addAll(buildCinderellaWarFromSource(config, config.getHome() + "/webapps/root.war"))
+            .add(saveHttpResponseTo(config.getWar(), config.getHome() +"/webapps", "root.war"))
             .add(writeEC2ServiceProperties(config))
             .add(exec("chown -R " + config.getUser() + " " + config.getHome())).build());
-   }
-   
-   private static Iterable<Statement> buildCinderellaWarFromSource(CinderellaConfig config, String dest) {
-      return ImmutableSet.<Statement> builder()
-            .add(extractTargzAndFlattenIntoDirectory(config.getMavenTar(), "/tmp/maven"))
-            .add(extractTargzAndFlattenIntoDirectory(config.getTar(), "/tmp/cinderella"))
-            .add(extractTargzAndFlattenIntoDirectory(config.getCloudStackTar(), "/tmp/cinderella/cloudbridge"))
-            .add(call("install_cinderella", "/tmp/cinderella", "/tmp/maven", dest))
-            .add(exec("rm -rf /tmp/cinderella /tmp/maven")).build();
    }
    
    private static Statement writeEC2ServiceProperties(CinderellaConfig config) {

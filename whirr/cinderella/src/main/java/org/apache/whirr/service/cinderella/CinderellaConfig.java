@@ -49,11 +49,10 @@ public class CinderellaConfig {
       private URI vCloudEndpoint;
       private String vCloudUserAtOrg;
       private String vCloudPassword;
-      private URI tar = URI.create("https://github.com/cinderella/cinderella/tarball/master");
-      private URI cloudStackTar = URI.create("https://github.com/cinderella/incubator-cloudStack/tarball/master");
-      private URI mavenTar = URI.create("http://www.us.apache.org/dist/maven/binaries/apache-maven-3.0.4-bin.tar.gz");
+      private URI war = URI
+            .create("https://repository-cinderella.forge.cloudbees.com/snapshot/io/cinderella/cinderella-web/1.0-SNAPSHOT/cinderella-web-1.0-SNAPSHOT.war");
       private URI jettyTar = URI
-            .create("http://download.eclipse.org/jetty/stable-8/dist/jetty-distribution-8.1.5.v20120716.tar.gz");
+            .create("http://download.eclipse.org/jetty/stable-8/dist/jetty-distribution-8.1.5.v20120716.war.gz");
 
       /**
        * @see CinderellaConfig#getUser()
@@ -128,26 +127,10 @@ public class CinderellaConfig {
       }
 
       /**
-       * @see CinderellaConfig#getTar()
+       * @see CinderellaConfig#getWar()
        */
-      public Builder tar(URI tar) {
-         this.tar = tar;
-         return this;
-      }
-
-      /**
-       * @see CinderellaConfig#getCloudStackTar()
-       */
-      public Builder cloudStackTar(URI cloudStackTar) {
-         this.cloudStackTar = cloudStackTar;
-         return this;
-      }
-
-      /**
-       * @see CinderellaConfig#getMavenTar()
-       */
-      public Builder mavenTar(URI mavenTar) {
-         this.mavenTar = mavenTar;
+      public Builder war(URI war) {
+         this.war = war;
          return this;
       }
 
@@ -161,14 +144,14 @@ public class CinderellaConfig {
 
       public CinderellaConfig build() {
          return new CinderellaConfig(user, home, ec2Port, ec2Version, authorizedAccessKey, authorizedSecretKey,
-               vCloudEndpoint, vCloudUserAtOrg, vCloudPassword, tar, cloudStackTar, mavenTar, jettyTar);
+               vCloudEndpoint, vCloudUserAtOrg, vCloudPassword, war, jettyTar);
       }
 
       public Builder fromCinderellaConfig(CinderellaConfig in) {
          return this.user(in.user).home(in.home).ec2Port(in.ec2Port).ec2Version(in.ec2Version)
                .authorizedAccessKey(in.authorizedAccessKey).authorizedSecretKey(in.authorizedSecretKey)
                .vCloudEndpoint(in.vCloudEndpoint).vCloudUserAtOrg(in.vCloudUserAtOrg).vCloudPassword(in.vCloudPassword)
-               .tar(in.tar).cloudStackTar(in.cloudStackTar).mavenTar(in.mavenTar).jettyTar(in.jettyTar);
+               .war(in.war).jettyTar(in.jettyTar);
       }
    }
 
@@ -181,14 +164,12 @@ public class CinderellaConfig {
    private final URI vCloudEndpoint;
    private final String vCloudUserAtOrg;
    private final String vCloudPassword;
-   private final URI tar;
-   private final URI cloudStackTar;
-   private final URI mavenTar;
+   private final URI war;
    private final URI jettyTar;
 
    protected CinderellaConfig(String user, String home, int ec2Port, String ec2Version, String authorizedAccessKey,
-         String authorizedSecretKey, URI vCloudEndpoint, String vCloudUserAtOrg, String vCloudPassword, URI tar,
-         URI cloudStackTar, URI mavenTar, URI jettyTar) {
+         String authorizedSecretKey, URI vCloudEndpoint, String vCloudUserAtOrg, String vCloudPassword, URI war,
+         URI jettyTar) {
       this.user = checkNotNull(user, "user");
       this.home = checkNotNull(home, "home");
       this.ec2Port = checkNotNull(ec2Port, "ec2Port");
@@ -198,9 +179,7 @@ public class CinderellaConfig {
       this.vCloudEndpoint = checkNotNull(vCloudEndpoint, "vCloudEndpoint");
       this.vCloudUserAtOrg = checkNotNull(vCloudUserAtOrg, "vCloudUserAtOrg");
       this.vCloudPassword = checkNotNull(vCloudPassword, "vCloudPassword");
-      this.tar = checkNotNull(tar, "tar");
-      this.cloudStackTar = checkNotNull(cloudStackTar, "cloudStackTar");
-      this.mavenTar = checkNotNull(mavenTar, "mavenTar");
+      this.war = checkNotNull(war, "war");
       this.jettyTar = checkNotNull(jettyTar, "jettyTar");
    }
 
@@ -280,34 +259,16 @@ public class CinderellaConfig {
    }
 
    /**
-    * location to install cinderella from. default
-    * {@code https://github.com/cinderella/cinderella/tarball/master}
+    * location to get cinderella from. default
+    * {@code https://repository-cinderella.forge.cloudbees.com/snapshot/io/cinderella/cinderella-web/1.0-SNAPSHOT/cinderella-web-1.0-SNAPSHOT.war}
     */
-   public URI getTar() {
-      return tar;
-   }
-
-   /**
-    * CloudStack Cloud Bridge is used for EC2 Query Classes. default
-    * {@code https://github.com/cinderella/incubator-cloudStack/tarball/master}
-    * 
-    */
-   public URI getCloudStackTar() {
-      return cloudStackTar;
-   }
-
-   /**
-    * Maven is used to create the war file for cinderella. default
-    * {@code http://www.us.apache.org/dist/maven/binaries/apache-maven-3.0.4-bin.tar.gz}
-    * 
-    */
-   public URI getMavenTar() {
-      return mavenTar;
+   public URI getWar() {
+      return war;
    }
 
    /**
     * Jetty is used to create the war file for cinderella. default
-    * {@code http://download.eclipse.org/jetty/stable-8/dist/jetty-distribution-8.1.5.v20120716.tar.gz}
+    * {@code http://download.eclipse.org/jetty/stable-8/dist/jetty-distribution-8.1.5.v20120716.war.gz}
     * 
     */
    public URI getJettyTar() {
@@ -320,7 +281,7 @@ public class CinderellaConfig {
    @Override
    public int hashCode() {
       return Objects.hashCode(user, home, ec2Port, ec2Version, authorizedAccessKey, vCloudEndpoint, vCloudUserAtOrg,
-            tar, cloudStackTar, mavenTar, jettyTar);
+            war, jettyTar);
    }
 
    /**
@@ -339,8 +300,7 @@ public class CinderellaConfig {
             && Objects.equal(this.ec2Port, other.ec2Port) && Objects.equal(this.ec2Version, other.ec2Version)
             && Objects.equal(this.authorizedAccessKey, other.authorizedAccessKey)
             && Objects.equal(this.vCloudEndpoint, other.vCloudEndpoint)
-            && Objects.equal(this.vCloudUserAtOrg, other.vCloudUserAtOrg) && Objects.equal(this.tar, other.tar)
-            && Objects.equal(this.cloudStackTar, other.cloudStackTar) && Objects.equal(this.mavenTar, other.mavenTar)
+            && Objects.equal(this.vCloudUserAtOrg, other.vCloudUserAtOrg) && Objects.equal(this.war, other.war)
             && Objects.equal(this.jettyTar, other.jettyTar);
    }
 
@@ -351,8 +311,8 @@ public class CinderellaConfig {
    public String toString() {
       return Objects.toStringHelper(this).omitNullValues().add("user", user).add("home", home).add("ec2Port", ec2Port)
             .add("ec2Version", ec2Version).add("authorizedAccessKey", authorizedAccessKey)
-            .add("vCloudEndpoint", vCloudEndpoint).add("vCloudUserAtOrg", vCloudUserAtOrg).add("tar", tar)
-            .add("cloudStackTar", cloudStackTar).add("mavenTar", mavenTar).add("jettyTar", jettyTar).toString();
+            .add("vCloudEndpoint", vCloudEndpoint).add("vCloudUserAtOrg", vCloudUserAtOrg).add("war", war)
+            .add("jettyTar", jettyTar).toString();
    }
 
 }

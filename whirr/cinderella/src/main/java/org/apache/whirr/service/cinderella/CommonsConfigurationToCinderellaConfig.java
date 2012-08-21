@@ -55,9 +55,7 @@ public class CommonsConfigurationToCinderellaConfig implements Function<Configur
       builder.vCloudEndpoint(URI.create(getPropertyOrThrowReasonableNPE(prefix + ".vcloud.endpoint", input)));
       builder.vCloudUserAtOrg(getPropertyOrThrowReasonableNPE(prefix + ".vcloud.useratorg", input));
       builder.vCloudPassword(getPropertyOrThrowReasonableNPE(prefix + ".vcloud.password", input));
-      builder.tar(URI.create(getPropertyOrThrowReasonableNPE(prefix + ".tar.url", input)));
-      builder.cloudStackTar(URI.create(getPropertyOrThrowReasonableNPE(prefix + ".cloudstack.tar.url", input)));
-      builder.mavenTar(URI.create(getPropertyOrThrowReasonableNPE(prefix + ".maven.tar.url", input)));
+      builder.war(URI.create(getPropertyOrThrowReasonableNPE(prefix + ".war.url", input)));
       builder.jettyTar(URI.create(getPropertyOrThrowReasonableNPE(prefix + ".jetty.tar.url", input)));
       return builder.build();
    }
