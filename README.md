@@ -1,4 +1,3 @@
-deploy
-======
+# This Repo is deprecated and will soon be removed #
 
-various means to deploy cinderella
+New deployment scripts and tools are at http://github.com/cinderella/cinderella-deploy
