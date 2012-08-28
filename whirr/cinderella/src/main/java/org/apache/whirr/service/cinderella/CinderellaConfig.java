@@ -43,7 +43,7 @@ public class CinderellaConfig {
       private String user = "cinderella";
       private String home = "/usr/local/cinderella";
       private int ec2Port = 8080;
-      private String ec2Version = "2010-11-15";
+      private String ec2Version = "2009-10-31";
       private String authorizedAccessKey = "MvndHwA4e6dgaGV23L94";
       private String authorizedSecretKey = "A50GS9tj2DLXRln4rf1K+A/CSjmAbBGw0H5yul6s";
       private URI vCloudEndpoint;
@@ -205,7 +205,7 @@ public class CinderellaConfig {
    }
 
    /**
-    * Version of the EC2 Api. default {@code 2010-11-15}
+    * Version of the EC2 Api. default {@code 2009-10-31}
     */
    public String getEC2Version() {
       return ec2Version;
